@@ -40,22 +40,22 @@ def main():
     basepath = sys.argv[1] if len(sys.argv) > 1 else "/"
     print(f"Using basepath: {basepath}")
 
-    # Create public directory if it doesn't exist
-    os.makedirs("public", exist_ok=True)
+    # Create docs directory if it doesn't exist
+    os.makedirs("docs", exist_ok=True)
     
-    # Delete anything in the public directory
-    for item in os.listdir("public"):
-        item_path = os.path.join("public", item)
+    # Delete anything in the docs directory
+    for item in os.listdir("docs"):
+        item_path = os.path.join("docs", item)
         if os.path.isdir(item_path):
             shutil.rmtree(item_path)
         else:
             os.remove(item_path)
     
-    # Copy static files to public directory
+    # Copy static files to docs directory
     if os.path.exists("static"):
         for item in os.listdir("static"):
             source = os.path.join("static", item)
-            destination = os.path.join("public", item)
+            destination = os.path.join("docs", item)
             if os.path.isdir(source):
                 shutil.copytree(source, destination)
             else:
