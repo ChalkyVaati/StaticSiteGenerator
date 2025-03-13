@@ -1,32 +1,26 @@
 import os
 import shutil
+import sys
 from page_generator import generate_page
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
     """Recursively generate HTML pages for all markdown files in the content directory."""
     
-    print(f"Starting recursive generation from {dir_path_content} to {dest_dir_path}")
+    print(f"Starting recursive generation from {dir_path_content} to {dest_dir_path} with basepath {basepath}")
     
-    # Use os.walk to traverse directories
     for root, dirs, files in os.walk(dir_path_content):
         for file in files:
             if file.endswith(".md"):  # Process only markdown files
-                # Get full path to the markdown file
-                md_path = os.path.join(root, file)
-                
-                # Get relative path from content directory
-                relative_path = os.path.relpath(root, dir_path_content)
+                md_path = os.path.join(root, file)  # Full path to markdown file
+                relative_path = os.path.relpath(root, dir_path_content)  # Get relative path
                 
                 # Determine the destination HTML path
                 if file == "index.md":
                     if relative_path == ".":
-                        # Root index.md becomes public/index.html
                         html_path = os.path.join(dest_dir_path, "index.html")
                     else:
-                        # Subdirectory index.md becomes public/subdir/index.html
                         html_path = os.path.join(dest_dir_path, relative_path, "index.html")
                 else:
-                    # Other .md files become public/subdir/filename.html
                     filename_without_ext = os.path.splitext(file)[0]
                     if relative_path == ".":
                         html_path = os.path.join(dest_dir_path, filename_without_ext + ".html")
@@ -36,12 +30,16 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
                 # Ensure the directory exists
                 os.makedirs(os.path.dirname(html_path), exist_ok=True)
                 
-                # Generate the HTML file using the existing generate_page function
-                generate_page(md_path, template_path, html_path)
+                # Generate the HTML file with basepath
+                generate_page(md_path, template_path, html_path, basepath)
                 
                 print(f"Generated {html_path} from {md_path}")
                 
 def main():
+    # Grab the first CLI argument as the basepath
+    basepath = sys.argv[1] if len(sys.argv) > 1 else "/"
+    print(f"Using basepath: {basepath}")
+
     # Create public directory if it doesn't exist
     os.makedirs("public", exist_ok=True)
     
@@ -63,11 +61,12 @@ def main():
             else:
                 shutil.copy2(source, destination)
     
-    # Replace the single generate_page call with generate_pages_recursive
+    # Call generate_pages_recursive with basepath
     generate_pages_recursive(
-        "content",        # dir_path_content - the directory containing markdown files
-        "template.html",  # template_path - the template to use
-        "public"          # dest_dir_path - where to write the generated HTML files
+        "content",
+        "template.html",
+        "docs",
+        basepath
     )
 
 if __name__ == "__main__":
